@@ -1,0 +1,34 @@
+# Servidor de notificaciones de la Oficialía Mayor
+# "docker compose up -d" prende los dos contenedores (la primera vez compila ntfy/).
+name: notificaciones
+
+services:
+  servidor:                           # el servidor ntfy
+    image: omayor:2.37.2              # imagen propia, compilada desde ./ntfy
+    build:
+      context: ./ntfy
+      dockerfile: Dockerfile-build    # Dockerfile oficial de ntfy: compila documentación, web y servidor
+      args:
+        VERSION: 2.37.2               # versión que reporta "ntfy --version"
+        COMMIT: "05109571"            # commit de la etiqueta v2.37.2 del repositorio oficial
+    container_name: servidor
+    command: serve
+    environment:
+      - TZ=America/Mexico_City        # horas locales en mensajes y logs
+    volumes:
+      - ./server.yml:/etc/ntfy/server.yml:ro   # la configuración
+      - datos:/var/cache/ntfy                  # mensajes y usuarios (se guardan dentro de Docker)
+    ports:
+      - "8080:80"                     # red local: http://<IP-de-la-PC>:8080
+    restart: unless-stopped
+
+  tunel:                              # túnel rápido de Cloudflare: publica el servidor en internet con HTTPS
+    image: cloudflare/cloudflared:latest
+    container_name: tunel
+    command: tunnel --no-autoupdate --url http://servidor:80
+    depends_on:
+      - servidor
+    restart: unless-stopped
+
+volumes:
+  datos:

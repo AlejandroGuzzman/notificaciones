@@ -1,0 +1,18 @@
+# Configuración del servidor ntfy — Oficialía Mayor
+# Cada opción cambia un valor por defecto de ntfy.
+
+# Puerto dentro del contenedor (afuera se publica en el 8080 y por el túnel).
+listen-http: ":80"
+
+# Guarda los mensajes para que no se pierdan al reiniciar.
+cache-file: "/var/cache/ntfy/cache.db"
+
+# Activa usuarios y contraseñas.
+auth-file: "/var/cache/ntfy/user.db"
+
+# Sin usuario no se puede leer ni publicar nada.
+auth-default-access: "deny-all"
+
+# Va detrás del túnel de Cloudflare: toma la IP real de cada visitante del
+# encabezado X-Forwarded-For, para los límites de mensajes y de intentos de acceso.
+behind-proxy: true
